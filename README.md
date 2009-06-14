@@ -13,11 +13,16 @@ Server
 -------------------
 The Reflex server runs on Linux and uses the excellent [Twisted][tw] networking library. It's not ready for installations just yet, so check back later!
 
+### Dependencies ###
+ * [Twisted][tw] (8.2.0+)
+ * [PyRRD][pyrrd] (0.0.7)
+
 Client
 -------------------
 Reflex clients are provided for PHP and Python but it's not too hard to write your own for any language that can send UDP packets.
 
   [fct]: http://code.flickr.com/blog/2008/10/27/counting-timing/
   [fsd]: http://code.flickr.com/trac/browser/trunk/Flickr-StatsD
+  [pyrrd]: http://code.google.com/p/pyrrd/
   [rrd]: http://oss.oetiker.ch/rrdtool/
   [tw]: http://twistedmatrix.com/
