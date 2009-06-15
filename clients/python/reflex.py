@@ -23,5 +23,5 @@ class ReflexClient:
 if __name__ == "__main__":
   print "Sending test_stat to 127.0.0.1"
   client = ReflexClient('127.0.0.1')
-  client.sendSum('test_sum')
-  client.sendAverage('test_average', 5)
+  client.sendSum('sum_foo')
+  client.sendAverage('average_foo', 5)
