@@ -40,11 +40,10 @@ class ReflexProtocol(protocol.DatagramProtocol):
 
     # start data rollup task
     self.rollup_task = task.LoopingCall(self.rollupData)
-    self.rollup_task.start(6, now=False)
+    self.rollup_task.start(60, now=False)
 
   def stopProtocol(self):
     protocol.DatagramProtocol.stopProtocol(self)
-    self.rollup_task.stop()
 
   def rollupData(self):
     log.msg('Rolling up data...')

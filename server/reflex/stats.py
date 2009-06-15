@@ -1,6 +1,7 @@
 import os
+import time
 from twisted.python import log
-from pyrrd import rrd
+from pyrrd.rrd import DataSource, RRA, RRD
 
 # Stat types supported
 TYPE_SUM     = 1
@@ -20,27 +21,27 @@ class Stat:
     self.data = []
 
   def createRRD(self, filename):
-    # TODO: Format the RRD correctly
     log.msg('Creating RRD: %s' % filename)
+    now = int(time.time()) - 60
     dss = []
     rras = []
-    dss.append(rrd.DataSource(ds_name=self.key, ds_type='GAUGE', heartbeat=60))
-    rras.append(rrd.RRA(cf='AVERAGE', xff=0.5, steps=1, rows=24))
-    rras.append(rrd.RRA(cf='AVERAGE', xff=0.5, steps=6, rows=10))
-    rrd = rrd.RRD(filename, ds=dss, rra=rras, start=920804400)
+    dss.append(DataSource(dsName=self.key, dsType='GAUGE', heartbeat=60))
+    rras.append(RRA(cf='AVERAGE', xff=0.5, steps=1, rows=1440))    # 1m for 24h
+    rras.append(RRA(cf='AVERAGE', xff=0.5, steps=15, rows=2880))   # 15m for 30d
+    rras.append(RRA(cf='AVERAGE', xff=0.5, steps=1440, rows=1826)) # 1d for 5y
+    rrd = RRD(filename, ds=dss, rra=rras, start=now)
     rrd.create()
     return rrd
 
   def getRRD(self):
-    # TODO: Use /var/reflex/rrds or something as dir
-    dir = '/tmp'
+    dir = '/var/reflex/rrds'
     filename = "%s/%s_%s.rrd" % (dir, self.key, TYPE_NAMES[self.type])
     rrd = None
 
     if not os.path.isfile(filename):
       rrd = self.createRRD(filename)
     else:
-      rrd = rrd.RRD(filename)
+      rrd = RRD(filename)
 
     return rrd
 
@@ -48,7 +49,12 @@ class Stat:
     pass
 
   def save(self, value):
-    print 'Updating %s RRD with value: %s' % (self.key, value)
+    value = int(value)
+    print 'Updating %s RRD with value: %d' % (self.key, value)
+    now = int(time.time())
+    rrd = self.getRRD()
+    rrd.bufferValue(now, value)
+    rrd.update()
 
   def update(self, data):
     print 'Updating %s with %s' % (self.key, data)
@@ -66,7 +72,6 @@ class SumStat(Stat):
     self.save(sum)
 
   def update(self, data):
-    print 'Storing data: %s' % data
     self.data.append(int(data))
 
 
