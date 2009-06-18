@@ -38,6 +38,10 @@ class Stat:
     filename = "%s/%s_%s.rrd" % (dir, self.key, TYPE_NAMES[self.type])
     rrd = None
 
+    # make sure /rrds directory is there for us
+    if not os.path.exists(dir):
+      os.makedirs(dir)
+
     if not os.path.isfile(filename):
       rrd = self.createRRD(filename)
     else:
