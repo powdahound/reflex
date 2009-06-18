@@ -68,7 +68,7 @@ class Stat:
       rrd.update()
     except IOError, e:
       # TODO: Figure out what's actually causing this exception
-      log.msg('ERROR: IOError caught while updating RRD (%s): %s' /
+      log.msg('ERROR: IOError caught while updating RRD (%s): %s' \
               % (self.getFilename(), e))
 
   def update(self, data):
