@@ -26,9 +26,11 @@ class Stat:
     dss = []
     rras = []
     dss.append(DataSource(dsName=self.key, dsType='GAUGE', heartbeat=60))
-    rras.append(RRA(cf='AVERAGE', xff=0.5, steps=1, rows=1440))    # 1m for 24h
-    rras.append(RRA(cf='AVERAGE', xff=0.5, steps=15, rows=2880))   # 15m for 30d
-    rras.append(RRA(cf='AVERAGE', xff=0.5, steps=1440, rows=1826)) # 1d for 5y
+    # RRAS: 1m for 24h, 15m for 30d, 1d for 5y
+    # From: http://rrdtools.appspot.com
+    rras.append(RRA(cf='AVERAGE', xff=0.5, steps=1,    rows=1440))
+    rras.append(RRA(cf='AVERAGE', xff=0.5, steps=15,   rows=2880))
+    rras.append(RRA(cf='AVERAGE', xff=0.5, steps=1440, rows=1826))
     rrd = RRD(filename, ds=dss, rra=rras, start=now)
     rrd.create()
     return rrd
@@ -49,16 +51,25 @@ class Stat:
 
     return rrd
 
+  def getFilename(self):
+    rrd = self.getRRD()
+    return rrd.filename
+
   def rollup(self):
     pass
 
   def save(self, value):
     value = int(value)
-    print 'Updating %s RRD with value: %d' % (self.key, value)
+    print 'Updating %s with value: %d' % (self.getFilename(), value)
     now = int(time.time())
     rrd = self.getRRD()
     rrd.bufferValue(now, value)
-    rrd.update()
+    try:
+      rrd.update()
+    except IOError, e:
+      # TODO: Figure out what's actually causing this exception
+      log.msg('ERROR: IOError caught while updating RRD (%s): %s' /
+              % (self.getFilename(), e))
 
   def update(self, data):
     print 'Updating %s with %s' % (self.key, data)
