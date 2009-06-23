@@ -21,17 +21,26 @@ class Stat:
     self.data = []
 
   def createRRD(self, filename):
+    """Create an RRD file for a stat
+
+    A good explanation of RRD creation can be found here:
+      http://oss.oetiker.ch/rrdtool/doc/rrdcreate.en.html
+
+    RRA values were generated using http://rrdtools.appspot.com. The RRAs we
+    create are:
+      - 1m  for 24h
+      - 15m for 30d
+      - 1d  for 5y
+    """
     log.msg('Creating RRD: %s' % filename)
-    now = int(time.time()) - 60
+    now = int(time.time())
     dss = []
     rras = []
-    dss.append(DataSource(dsName=self.key, dsType='GAUGE', heartbeat=60))
-    # RRAS: 1m for 24h, 15m for 30d, 1d for 5y
-    # From: http://rrdtools.appspot.com
+    dss.append(DataSource(dsName=self.key, dsType='GAUGE', heartbeat=300))
     rras.append(RRA(cf='AVERAGE', xff=0.5, steps=1,    rows=1440))
     rras.append(RRA(cf='AVERAGE', xff=0.5, steps=15,   rows=2880))
     rras.append(RRA(cf='AVERAGE', xff=0.5, steps=1440, rows=1826))
-    rrd = RRD(filename, ds=dss, rra=rras, start=now)
+    rrd = RRD(filename, ds=dss, rra=rras, start=now-60)
     rrd.create()
     return rrd
 
