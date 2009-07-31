@@ -77,10 +77,10 @@ class Stat:
         rrd.bufferValue(now, value)
         try:
             rrd.update()
-        except IOError, e:
+        except EnvironmentError, e:
             # TODO: Figure out what's actually causing this exception
-            log.msg('ERROR: IOError caught while updating RRD (%s): %s' \
-                    % (self.getFilename(), e))
+            log.msg('ERROR: EnvironmentError caught while \
+                    updating RRD (%s): %s' % (self.getFilename(), e))
 
     def update(self, data):
         print 'Updating %s with %s' % (self.key, data)
