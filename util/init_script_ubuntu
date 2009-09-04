@@ -15,7 +15,7 @@ PLUGIN_OPTS=""
 LOG_FILE=/var/log/reflex.log
 
 PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
-DAEMON=/usr/bin/twistd
+DAEMON=`which twistd`
 PIDFILE=/var/run/$PLUGIN_NAME.pid
 DAEMON_OPTS="--umask=022 --pidfile=$PIDFILE --logfile=$LOG_FILE $PLUGIN_NAME $PLUGIN_OPTS"
 
