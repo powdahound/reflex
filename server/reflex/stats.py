@@ -20,6 +20,7 @@ class Stat:
     def __init__(self, key):
         self.key = key
         self.data = []
+        self.rrd = None
 
     def createRRD(self, filename):
         """Create an RRD file for a stat
@@ -47,20 +48,21 @@ class Stat:
         return rrd
 
     def getRRD(self):
-        dir = '/var/reflex/rrds'
-        filename = "%s/%s_%s.rrd" % (dir, self.key, TYPE_NAMES[self.type])
-        rrd = None
+        if not self.rrd:
+            dir = '/var/reflex/rrds'
+            filename = "%s/%s_%s.rrd" % (dir, self.key, TYPE_NAMES[self.type])
+            print 'Getting handle to RRD: %s' % filename
 
-        # make sure /rrds directory is there for us
-        if not os.path.exists(dir):
-            os.makedirs(dir)
+            # make sure /rrds directory is there for us
+            if not os.path.exists(dir):
+                os.makedirs(dir)
 
-        if not os.path.isfile(filename):
-            rrd = self.createRRD(filename)
-        else:
-            rrd = RRD(filename)
+            if not os.path.isfile(filename):
+                self.rrd = self.createRRD(filename)
+            else:
+                self.rrd = RRD(filename)
 
-        return rrd
+        return self.rrd
 
     def getFilename(self):
         rrd = self.getRRD()
