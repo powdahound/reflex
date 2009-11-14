@@ -80,10 +80,6 @@ class Stat:
 
     def save(self, value):
         value = int(value)
-        rrd = self.getRRD()
-        if not rrd:
-            print "ERROR: Could not get RRD for key=%s" % self.key
-            return
         print 'Updating %s with value: %d' % (self.getFilename(), value)
 
         # send to collectd
@@ -92,6 +88,10 @@ class Stat:
         self.collectd.putval(id, ['U', value], { 'interval': 60 })
 
         # legacy: write our rrd
+        rrd = self.getRRD()
+        if not rrd:
+            print "ERROR: Could not get RRD for key=%s" % self.key
+            return
         now = int(time.time())
         rrd.bufferValue(now, value)
         try:
