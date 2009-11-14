@@ -46,9 +46,13 @@ class Stat:
         rras.append(RRA(cf='AVERAGE', xff=0.5, steps=1, rows=1440))
         rras.append(RRA(cf='AVERAGE', xff=0.5, steps=15, rows=2880))
         rras.append(RRA(cf='AVERAGE', xff=0.5, steps=1440, rows=1826))
-        rrd = RRD(filename, ds=dss, rra=rras, start=now-60)
-        rrd.create()
-        return rrd
+        try:
+            rrd = RRD(filename, ds=dss, rra=rras, start=now-60)
+            rrd.create()
+            return rrd
+        except:
+            log.msg('ERROR: some exception while creating rrd. grr')
+            return None
 
     def getRRD(self):
         if not self.rrd:
@@ -69,13 +73,17 @@ class Stat:
 
     def getFilename(self):
         rrd = self.getRRD()
-        return rrd.filename
+        return rrd.filename if rrd else None
 
     def rollup(self):
         pass
 
     def save(self, value):
         value = int(value)
+        rrd = self.getRRD()
+        if not rrd:
+            print "ERROR: Could not get RRD for key=%s" % self.key
+            return
         print 'Updating %s with value: %d' % (self.getFilename(), value)
 
         # send to collectd
@@ -85,7 +93,6 @@ class Stat:
 
         # legacy: write our rrd
         now = int(time.time())
-        rrd = self.getRRD()
         rrd.bufferValue(now, value)
         try:
             rrd.update()
