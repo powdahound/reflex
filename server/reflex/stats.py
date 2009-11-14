@@ -1,7 +1,9 @@
 import os
+import socket
 import time
-from twisted.python import log
+from collectd_unixsock import Collectd
 from pyrrd.rrd import DataSource, RRA, RRD
+from twisted.python import log
 
 # Stat types supported
 TYPE_SUM = 1
@@ -21,6 +23,7 @@ class Stat:
         self.key = key
         self.data = []
         self.rrd = None
+        self.collectd = Collectd()
 
     def createRRD(self, filename):
         """Create an RRD file for a stat
@@ -74,6 +77,13 @@ class Stat:
     def save(self, value):
         value = int(value)
         print 'Updating %s with value: %d' % (self.getFilename(), value)
+
+        # send to collectd
+        hostname = socket.getfqdn()
+        id = "%s/reflex/gauge-%s" % (hostname, self.key)
+        self.collectd.putval(id, ['U', value], { 'interval': 60 })
+
+        # legacy: write our rrd
         now = int(time.time())
         rrd = self.getRRD()
         rrd.bufferValue(now, value)
