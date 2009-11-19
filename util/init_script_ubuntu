@@ -16,7 +16,7 @@ PLUGIN_OPTS=""
 PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
 DAEMON=`which twistd`
 PIDFILE=/var/run/$PLUGIN_NAME.pid
-DAEMON_OPTS="--umask=022 --pidfile=$PIDFILE --syslog --prefix $PLUGIN_NAME $PLUGIN_NAME $PLUGIN_OPTS"
+DAEMON_OPTS="--umask=022 --pidfile=$PIDFILE --syslog --prefix=$PLUGIN_NAME $PLUGIN_NAME $PLUGIN_OPTS"
 
 export PYTHONPATH=$PLUGIN_DIR
 
