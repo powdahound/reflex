@@ -47,7 +47,6 @@ class ReflexProtocol(protocol.DatagramProtocol):
         protocol.DatagramProtocol.stopProtocol(self)
 
     def rollupData(self):
-        log.msg('Rolling up data...')
         for stat in self.stats:
             self.stats[stat].rollup()
 

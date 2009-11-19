@@ -28,7 +28,7 @@ class Stat:
 
     def save(self, value):
         value = int(value)
-        print 'Sending %s = %d' % (self.key, value)
+        #print 'Sending %s = %d' % (self.key, value)
 
         # send to collectd
         hostname = socket.getfqdn()
@@ -36,7 +36,8 @@ class Stat:
         self.collectd.putval(id, ['U', value], { 'interval': 60 })
 
     def update(self, data):
-        print 'Updating %s with %s' % (self.key, data)
+        #print 'Updating %s with %s' % (self.key, data)
+        pass
 
 
 class SumStat(Stat):
