@@ -8,12 +8,6 @@ from twisted.python import log
 TYPE_SUM = 1
 TYPE_AVERAGE = 2
 
-# Human names for each type
-TYPE_NAMES = {
-  TYPE_SUM: 'sum',
-  TYPE_AVERAGE: 'average',
-}
-
 
 class Stat:
     type = None
