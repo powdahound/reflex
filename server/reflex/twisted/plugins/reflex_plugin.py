@@ -4,7 +4,7 @@ from twisted.plugin import IPlugin
 from twisted.application.service import IServiceMaker
 from twisted.application import internet
 
-from reflex import ReflexProtocol, ReflexService
+from reflex import CoreService
 
 
 class Options(usage.Options):
@@ -19,6 +19,6 @@ class ReflexServiceMaker(object):
     options = Options
 
     def makeService(self, options):
-        return ReflexService(int(options['port']), ReflexProtocol())
+        return CoreService(int(options['port']))
 
 serviceMaker = ReflexServiceMaker()

@@ -13,11 +13,11 @@ TYPE_AVERAGE = 2
 class Stat:
     type = None
 
-    def __init__(self, protocol, key):
+    def __init__(self, core, key):
         self.collectd = Collectd()
         self.data = []
         self.key = key
-        self.protocol = protocol
+        self.core = core
 
     def rollup(self):
         pass
@@ -37,8 +37,13 @@ class Stat:
             hour = datetime.utcnow().strftime('%Y%m%d%H')
             key = "%s_%s" % (self.key, hour)
             # log.msg('Incrementing in redis: %r by %d' % (key, value))
-            self.protocol.redis.incr(key, value)
-            self.protocol.redis.sadd('reflex_stats', self.key)
+
+            if not self.core.redis:
+                log.msg("Redis not available")
+                return
+
+            self.core.redis.incr(key, value)
+            self.core.redis.sadd('reflex_stats', self.key)
 
     def update(self, data):
         #print 'Updating %s with %s' % (self.key, data)

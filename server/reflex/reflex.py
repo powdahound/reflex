@@ -1,4 +1,4 @@
-from twisted.application import internet
+from twisted.application import internet, service
 from twisted.internet import protocol, reactor, task
 from twisted.python import log
 
@@ -7,14 +7,34 @@ from txredis.protocol import Redis
 import stats
 
 
+class CoreService(service.MultiService):
+
+    def __init__(self, reflex_port):
+        service.MultiService.__init__(self)
+        self.redis = None
+        self.reflex_port = reflex_port
+
+        # setup main service
+        rs = ReflexService(self.reflex_port, ReflexProtocol(self))
+        rs.setServiceParent(self)
+
+    def startService(self):
+        service.MultiService.startService(self)
+
+        # connect to redis
+        redis_factory = RedisFactory(self)
+        d = reactor.connectTCP('localhost', 6379, redis_factory)
+        return d
+
+
 class ReflexProtocol(protocol.DatagramProtocol):
     noisy = True
 
-    def __init__(self):
+    def __init__(self, core):
         """Note: Parent class has no __init__ to call"""
         self.rollup_task = None
         self.stats = {}
-        self.redis = None
+        self.core = core
 
     def datagramReceived(self, data, (host, port)):
         data = data.strip()
@@ -30,9 +50,9 @@ class ReflexProtocol(protocol.DatagramProtocol):
         if full_key not in self.stats:
             # TODO: Switch to dynamic dispatch or something
             if type == stats.TYPE_SUM:
-                self.stats[full_key] = stats.SumStat(self, key)
+                self.stats[full_key] = stats.SumStat(self.core, key)
             elif type == stats.TYPE_AVERAGE:
-                self.stats[full_key] = stats.AverageStat(self, key)
+                self.stats[full_key] = stats.AverageStat(self.core, key)
             else:
                 log.msg('Unknown stat type: %s' % type)
                 return None
@@ -46,17 +66,6 @@ class ReflexProtocol(protocol.DatagramProtocol):
         self.rollup_task = task.LoopingCall(self.rollupData)
         self.rollup_task.start(60, now=False)
 
-        # connect to redis
-        cc = protocol.ClientCreator(reactor, Redis)
-        d = cc.connectTCP('localhost', 6379)
-
-        def cb(result):
-            self.redis = result
-            log.msg('Connected to Redis: %r' % self.redis)
-
-        d.addCallback(cb)
-        return d
-
     def stopProtocol(self):
         protocol.DatagramProtocol.stopProtocol(self)
 
@@ -69,4 +78,33 @@ class ReflexService(internet.UDPServer):
 
     def startService(self):
         internet.UDPServer.startService(self)
-        log.msg('Reflex service ready and waiting!')
+        log.msg('Reflex service started')
+
+
+class RedisFactory(protocol.ReconnectingClientFactory):
+    def __init__(self, core):
+        self.core = core
+        parent = protocol.ReconnectingClientFactory
+
+    def startedConnecting(self, connector):
+        print 'Connecting to Redis...'
+
+    def buildProtocol(self, addr):
+        print 'Connected to Redis'
+        self.resetDelay()
+
+        protocol = Redis()
+        self.core.redis = protocol
+        return protocol
+
+    def clientConnectionLost(self, connector, reason):
+        print 'Lost Redis connection. Reason:', reason
+
+        parent = protocol.ReconnectingClientFactory
+        parent.clientConnectionLost(self, connector, reason)
+
+    def clientConnectionFailed(self, connector, reason):
+        print 'Redis connection failed. Reason:', reason
+
+        parent = protocol.ReconnectingClientFactory
+        parent.clientConnectionFailed(self, connector, reason)
