@@ -9,21 +9,27 @@ import stats
 
 class CoreService(service.MultiService):
 
-    def __init__(self, reflex_port):
+    def __init__(self, reflex_port, redis_host, redis_port):
         service.MultiService.__init__(self)
         self.redis = None
         self.reflex_port = reflex_port
+        self.redis_host = redis_host
+        self.redis_port = redis_port
 
         # setup main service
         rs = ReflexService(self.reflex_port, ReflexProtocol(self))
         rs.setServiceParent(self)
 
     def startService(self):
+        log.msg("Starting services...")
+        log.msg(" - Reflex is localhost:%d" % self.reflex_port)
+        log.msg(" - Redis is %s:%d" % (self.redis_host, self.redis_port))
+
         service.MultiService.startService(self)
 
         # connect to redis
         redis_factory = RedisFactory(self)
-        d = reactor.connectTCP('localhost', 6379, redis_factory)
+        d = reactor.connectTCP(self.redis_host, self.redis_port, redis_factory)
         return d
 
 
