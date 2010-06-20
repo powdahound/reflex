@@ -20,7 +20,7 @@ To-Do
  * Drop collectd support
  * Store more data in Redis
  * Use Google visualization API for display
- * Small web UI
+ * Small web UI (Use Google App Engine? Hosting it offsite would be awesome, and we don't really need Redis.)
  * Include ability to delete/clear data points
 
 
