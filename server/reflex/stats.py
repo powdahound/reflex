@@ -62,7 +62,7 @@ class SumStat(Stat):
             count += num
 
         self.send_to_collectd(count)
-        self.send_to_redis(count)
+        #self.send_to_redis(count)
 
     def update(self, data):
         self.data.append(int(data))

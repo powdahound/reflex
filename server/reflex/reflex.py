@@ -23,14 +23,14 @@ class CoreService(service.MultiService):
     def startService(self):
         log.msg("Starting services...")
         log.msg(" - Reflex is localhost:%d" % self.reflex_port)
-        log.msg(" - Redis is %s:%d" % (self.redis_host, self.redis_port))
+        #log.msg(" - Redis is %s:%d" % (self.redis_host, self.redis_port))
 
         service.MultiService.startService(self)
 
         # connect to redis
-        redis_factory = RedisFactory(self)
-        d = reactor.connectTCP(self.redis_host, self.redis_port, redis_factory)
-        return d
+        #redis_factory = RedisFactory(self)
+        #d = reactor.connectTCP(self.redis_host, self.redis_port, redis_factory)
+        #return d
 
 
 class ReflexProtocol(protocol.DatagramProtocol):
